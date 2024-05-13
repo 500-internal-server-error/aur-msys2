@@ -2,6 +2,7 @@
 # `.gitignore`. Doesn't seem to be necessary but might as well include self.
 /**/*
 !/.gitignore
+!/.gitattributes
 
 # Allow the top-level directories, they represent the packages.
 # Also allow the packages' `PKGBUILD`s and patch files, along with their
