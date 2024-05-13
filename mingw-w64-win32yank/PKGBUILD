@@ -1,0 +1,53 @@
+# Maintainer: Some One <some.one@some.email.com>
+
+_realname='win32yank'
+pkgbase="mingw-w64-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=0.1.1
+pkgrel=1
+pkgdesc='Windows clipboard tool'
+arch=('x86_64')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://github.com/equalsraf/win32yank'
+license=('spdx:ISC')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+optdepends=()
+makedepends=("${MINGW_PACKAGE_PREFIX}-rust")
+source=("https://github.com/equalsraf/win32yank/archive/refs/tags/v${pkgver}.tar.gz")
+sha256sums=('194126f114e3736e6e03bbf69ace9a2125ecfa2fc69bd1760d42fdd6adea1b37')
+
+prepare() {
+	cd "${srcdir}/${_realname}-${pkgver}"
+
+	# if packaging fails at build, use `cargo fetch --locked` instead
+	local _target="${CARCH}-pc-windows-gnu"
+	if [[ "${MINGW_PACKAGE_PREFIX}" == "*clang-aarch64" ]]; then
+		_target="${CARCH}-pc-windows-gnullvm"
+	fi
+	cargo fetch --target "${_target}"
+}
+
+build() {
+	cd "${srcdir}/${_realname}-${pkgver}"
+
+	cargo build --release --frozen --all-features
+}
+
+check() {
+	cd "${srcdir}/${_realname}-${pkgver}"
+
+	cargo test --release --frozen
+}
+
+package() {
+	cd "${srcdir}/${_realname}-${pkgver}"
+
+	cargo install \
+		--offline \
+		--no-track \
+		--frozen \
+		--path . \
+		--root "${pkgdir}${MINGW_PREFIX}"
+	
+	install -Dm644 -t "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}" "${srcdir}/${_realname}-${pkgver}/LICENSE"
+}

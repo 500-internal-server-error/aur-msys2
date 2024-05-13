@@ -1,0 +1,105 @@
+# Maintainer: Some One <some.one@some.email.com>
+
+pkgname="z3"
+pkgver=4.13.0
+pkgrel=1
+pkgdesc="Z3 is a high-performance theorem prover being developed at Microsoft Research"
+arch=('any')
+url="https://github.com/Z3Prover/z3"
+license=('spdx:MIT')
+depends=("gcc-libs"
+         "gmp")
+makedepends=("gcc"
+             "cmake"
+             "ninja"
+             "python"
+             "gmp-devel")
+source=("https://github.com/Z3Prover/z3/archive/z3-${pkgver}.tar.gz"
+        001-mingw-fixes.patch
+        003-fix-dll-exports.patch
+        004-fix-python-bindings-install.patch)
+sha256sums=('01bcc61c8362e37bb89fd2430f7e3385e86df7915019bd2ce45de9d9bd934502'
+            'dff9754409a077d0ae49f1bfb2404bd5b318d301273844a80649a9e20e61e2fa'
+            'ce01668afae8e60c32a0d7937d3f8f67a7dc23aa4270913d157e676d061dfe6a'
+            'a1c96b734e71d4cffc5d55f8a9ed5cc823ac87a8fcb6691a84a23a201398a398')
+
+apply_patch_with_msg() {
+  for _fname in "$@"
+  do
+    msg2 "Applying ${_fname}"
+    patch -Nbp1 -i "${srcdir}"/${_fname}
+  done
+}
+
+prepare() {
+  cd "${srcdir}"/${pkgname}-${pkgname}-${pkgver}
+  apply_patch_with_msg \
+    001-mingw-fixes.patch \
+    003-fix-dll-exports.patch \
+    004-fix-python-bindings-install.patch
+}
+
+build() {
+  local -a extra_config
+  if check_option "debug" "y"; then
+    extra_config+=(-DCMAKE_BUILD_TYPE=Debug)
+    VERBOSE="VERBOSE=1"
+  else
+    extra_config+=(-DCMAKE_BUILD_TYPE=Release)
+  fi
+
+  mkdir -p "${srcdir}"/build-${MSYSTEM}-static && cd "${srcdir}"/build-${MSYSTEM}-static
+
+  msg "Build static z3"
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  /usr/bin/cmake.exe \
+    -G"Ninja" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DZ3_BUILD_LIBZ3_SHARED=OFF \
+    -DZ3_BUILD_TEST_EXECUTABLES=OFF \
+    -DZ3_INCLUDE_GIT_HASH=OFF \
+    -DZ3_INCLUDE_GIT_DESCRIBE=OFF \
+    -DZ3_ENABLE_EXAMPLE_TARGETS=OFF \
+    -DPython3_EXECUTABLE=/usr/bin/python.exe \
+    "${extra_config[@]}" \
+    ../${pkgname}-${pkgname}-${pkgver}
+
+  /usr/bin/cmake.exe --build ./
+
+  mkdir -p "${srcdir}"/build-${MSYSTEM}-shared && cd "${srcdir}"/build-${MSYSTEM}-shared
+
+  msg "Build shared z3"
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  /usr/bin/cmake.exe \
+    -G"Ninja" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DZ3_BUILD_LIBZ3_SHARED=ON \
+    -DZ3_BUILD_PYTHON_BINDINGS=OFF \
+    -DZ3_USE_LIB_GMP=ON \
+    -DZ3_BUILD_TEST_EXECUTABLES=OFF \
+    -DZ3_INCLUDE_GIT_HASH=OFF \
+    -DZ3_INCLUDE_GIT_DESCRIBE=OFF \
+    -DPython3_EXECUTABLE=/usr/bin/python.exe \
+    "${extra_config[@]}" \
+    ../${pkgname}-${pkgname}-${pkgver}
+
+  /usr/bin/cmake.exe --build ./
+}
+
+check() {
+ cd "${srcdir}"/build-${MSYSTEM}-shared
+ /usr/bin/ctest.exe test-z3 || true
+}
+
+package() {
+  cd "${srcdir}"/build-${MSYSTEM}-static
+  DESTDIR="${pkgdir}" /usr/bin/cmake.exe --install .
+
+  cd "${srcdir}"/build-${MSYSTEM}-shared
+  DESTDIR="${pkgdir}" /usr/bin/cmake.exe --install .
+
+  MSYS2_ARG_CONV_EXCL="-p" python -m compileall \
+    -o 0 -o 1 -q -s"${pkgdir}" -p"/" "${pkgdir}/usr/lib/python"*
+
+  install -Dm644 ${srcdir}/${pkgname}-${pkgname}-${pkgver}/LICENSE.txt ${pkgdir}/usr/share/licenses/${pkgname}/LICENSE.txt
+}

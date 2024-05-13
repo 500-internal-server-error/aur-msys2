@@ -1,0 +1,27 @@
+# Maintainer: Silvio <s.i.l.v.io..f.r.i.c.k.e@gmail.com>
+# Contribute via: https://github.com/silvio/archlinux-package--shellcheck-bin
+
+# Contributor: katt <magunasu.b97@gmail.com>
+
+pkgname=shellcheck-bin
+pkgver=0.10.0
+pkgrel=1
+url='https://shellcheck.net'
+pkgdesc='Shell script analysis tool (binary release, static)'
+license=(GPL-3.0-only)
+arch=(x86_64)
+conflicts=(
+	"shellcheck"
+	"shellcheck-git"
+	"shellcheck-git-static"
+)
+provides=("shellcheck")
+
+source=(https://github.com/koalaman/"${pkgname%-bin}"/releases/download/v"$pkgver"/"${pkgname%-bin}"-v"${pkgver}".zip)
+
+sha512sums=('c898ab6a03d1d10a327208d5fa0765d620fa0e7d432252fa07a1adbac0fc35a1a5196c698a7dc332abbaca3bb1ebec1b278b40c7bd15a68679fe18d425deebb8')
+
+package() {
+    install -Dm755 "shellcheck.exe" -t "${pkgdir}/usr/bin"
+}
+

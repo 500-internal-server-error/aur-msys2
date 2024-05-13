@@ -1,0 +1,60 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+
+_realname=pinentry
+pkgname=pinentry-cli
+pkgver=1.3.0
+pkgrel=1
+pkgdesc='A collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol'
+url='https://gnupg.org/related_software/pinentry/'
+license=('GPL')
+arch=('i686' 'x86_64')
+makedepends=('ncurses-devel' 'libassuan-devel' 'libgpg-error-devel' 'autotools' 'gcc')
+depends=('ncurses' 'libassuan' 'libgpg-error')
+provides=('pinentry')
+conflicts=('pinentry')
+source=(https://gnupg.org/ftp/gcrypt/${pkgname}/${_realname}-${pkgver}.tar.bz2{,.sig}
+        1.1.0-w32.patch
+        1.0.0-libiconv.patch)
+sha256sums=('9b3cd5226e7597f2fded399a3bc659923351536559e9db0826981bca316494de'
+            'SKIP'
+            '0222e625b39f2acd75e718d65ee4eb86f90766cd36e26b9460676766738bc93d'
+            '7723a10cfc9f8a711b118ad9bd06e96c2acb9860f91b635b1253588c2a42811c')
+validpgpkeys=('D8692123C4065DEA5E0F3AB5249B39D24F25E3B6' # Werner Koch (dist sig)
+              '6DAA6E64A76D2840571B4902528897B826403ADA' # Werner Koch (dist signing 2020)
+              'AC8E115BF73E2D8D47FA9908E98E9B2D19C6C8BD') # Niibe Yutaka (GnuPG Release Key)
+
+prepare() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  # patch -p1 -i ${srcdir}/1.1.0-w32.patch
+  patch -p2 -i ${srcdir}/1.0.0-libiconv.patch
+  ./autogen.sh
+}
+
+build() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+
+  local CYGWIN_CHOST="${CHOST/-msys/-cygwin}"
+  ./configure \
+    --build=${CYGWIN_CHOST} \
+    --prefix=/usr \
+    --enable-pinentry-tty \
+    --disable-fallback-curses \
+    --disable-pinentry-curses \
+	--disable-inside-emacs \
+	--disable-pinentry-gnome3 \
+    --disable-pinentry-gtk2 \
+    --disable-pinentry-qt \
+    --disable-libsecret 
+
+  make
+}
+
+check() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  make check
+}
+
+package() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  make DESTDIR="${pkgdir}" install
+}

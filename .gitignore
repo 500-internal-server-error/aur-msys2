@@ -1,0 +1,14 @@
+# Ignore everything as a baseline, this is a more of a `.gitinclude` than a
+# `.gitignore`. Doesn't seem to be necessary but might as well include self.
+/**/*
+!/.gitignore
+
+# Allow the top-level directories, they represent the packages.
+# Also allow the packages' `PKGBUILD`s and patch files, along with their
+# direct `.gitignore`s so they can track more files if needed. Also allow a
+# `README.md` file for whatever notes, if any
+!/*
+!/*/PKGBUILD
+!/*/*.patch
+!/*/.gitignore
+!/*/README.md
