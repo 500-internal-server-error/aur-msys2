@@ -10,6 +10,7 @@ url='https://shellcheck.net'
 pkgdesc='Shell script analysis tool (binary release, static)'
 license=(GPL-3.0-only)
 arch=(x86_64)
+mingw_arch=('ucrt64')
 conflicts=(
 	"shellcheck"
 	"shellcheck-git"
@@ -22,6 +23,6 @@ source=(https://github.com/koalaman/"${pkgname%-bin}"/releases/download/v"$pkgve
 sha512sums=('c898ab6a03d1d10a327208d5fa0765d620fa0e7d432252fa07a1adbac0fc35a1a5196c698a7dc332abbaca3bb1ebec1b278b40c7bd15a68679fe18d425deebb8')
 
 package() {
-    install -Dm755 "shellcheck.exe" -t "${pkgdir}/usr/bin"
+    install -Dm755 "shellcheck.exe" -t "${pkgdir}${MINGW_PREFIX}/bin"
 }
 
