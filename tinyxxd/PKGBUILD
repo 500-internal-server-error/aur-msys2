@@ -18,6 +18,6 @@ build() {
 
 package() {
   DESTDIR="$pkgdir" make -C $pkgname-$pkgver install
-  ln -s "$pkgdir/usr/bin/tinyxxd.exe" "$pkgdir/usr/bin/xxd.exe"
+  MSYS=winsymlinks:native ln "$pkgdir/usr/bin/tinyxxd.exe" "$pkgdir/usr/bin/xxd.exe"
 }
 
