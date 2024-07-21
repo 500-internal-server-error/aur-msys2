@@ -2,7 +2,7 @@
 
 _realname=pinentry
 pkgname=pinentry-cli
-pkgver=1.3.0
+pkgver=1.3.1
 pkgrel=1
 pkgdesc='A collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol'
 url='https://gnupg.org/related_software/pinentry/'
@@ -12,10 +12,10 @@ makedepends=('ncurses-devel' 'libassuan-devel' 'libgpg-error-devel' 'autotools' 
 depends=('ncurses' 'libassuan' 'libgpg-error')
 provides=('pinentry')
 conflicts=('pinentry')
-source=(https://gnupg.org/ftp/gcrypt/${pkgname}/${_realname}-${pkgver}.tar.bz2{,.sig}
+source=(https://gnupg.org/ftp/gcrypt/${_realname}/${_realname}-${pkgver}.tar.bz2{,.sig}
         1.1.0-w32.patch
         1.0.0-libiconv.patch)
-sha256sums=('9b3cd5226e7597f2fded399a3bc659923351536559e9db0826981bca316494de'
+sha256sums=('bc72ee27c7239007ab1896c3c2fae53b076e2c9bd2483dc2769a16902bce8c04'
             'SKIP'
             '0222e625b39f2acd75e718d65ee4eb86f90766cd36e26b9460676766738bc93d'
             '7723a10cfc9f8a711b118ad9bd06e96c2acb9860f91b635b1253588c2a42811c')
