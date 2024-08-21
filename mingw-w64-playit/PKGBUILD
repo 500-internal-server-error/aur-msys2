@@ -1,0 +1,35 @@
+_realname=playit-win-xdg
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=0.15.19
+pkgrel=1
+pkgdesc='A tunneling tool to host a game server without port forwarding or sharing public IP, patched to use XDG dirs on Windows (mingw-w64)'
+arch=('any')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+url='https://playit.gg'
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+makedepends=("${MINGW_PACKAGE_PREFIX}-rust")
+license=('spdx:BSD-2-Clause')
+source=("https://github.com/playit-cloud/playit-agent/archive/refs/tags/v${pkgver}.tar.gz")
+sha256sums=('f183c98d4b3d8388d2016be14dc781a30259f72021d833bf5156e3e3fe2cff30')
+
+prepare() {
+	cd "${srcdir}/playit-agent-${pkgver}"
+
+	sed -i 's/dirs::config_local_dir()/match std::env::var_os("XDG_CONFIG_HOME") { Some(v) => Some(std::path::PathBuf::from(v)), None => dirs::config_local_dir() }/g' packages/agent_cli/src/playit_secret.rs
+
+	# if cargo wants to make an http request at build stage, use `cargo fetch --locked` instead
+	cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+	cd "${srcdir}/playit-agent-${pkgver}"
+
+	cargo build --release --frozen --all-features
+}
+
+package() {
+	cd "${srcdir}/playit-agent-${pkgver}"
+
+	install -Dm755 "${srcdir}/playit-agent-${pkgver}/target/release/playit-cli.exe" "${pkgdir}${MINGW_PREFIX}/bin/playit.exe"
+	install -Dm644 -t "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}" "${srcdir}/playit-agent-${pkgver}/LICENSE.txt"
+}
