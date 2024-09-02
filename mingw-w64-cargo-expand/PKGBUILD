@@ -1,0 +1,42 @@
+_realname=cargo-expand
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=1.0.90
+pkgrel=1
+pkgdesc='Subcommand to show result of macro expansion (mingw-w64)'
+arch=('x86_64')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+url="https://github.com/dtolnay/cargo-expand"
+license=('spdx:MIT OR Apache-2.0')
+msys2_references=(
+	'archlinux: cargo-expand'
+)
+depends=(
+	"${MINGW_PACKAGE_PREFIX}-rust"
+	"${MINGW_PACKAGE_PREFIX}-gcc-libs"
+)
+source=("${_realname}-${pkgver}.tar.gz::${url}/archive/${pkgver}.tar.gz")
+sha256sums=('3f1ad573e81e83abc1ad9d64933971deb3d3ad7b4a7cd84aaef734a17e750662')
+options=('!lto')
+
+prepare() {
+	cd "${_realname}-${pkgver}"
+	cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+	cd "${_realname}-${pkgver}"
+	cargo build --release --frozen
+}
+
+check() {
+	cd "${_realname}-${pkgver}"
+	cargo test --frozen
+}
+
+package() {
+	cd "${_realname}-${pkgver}"
+	install -Dm 755 "target/release/${_realname}.exe" -t "${pkgdir}${MINGW_PREFIX}/bin"
+	install -Dm 644 README.md -t "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}"
+	install -Dm 644 LICENSE-MIT -t "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}"
+}
