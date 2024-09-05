@@ -1,0 +1,34 @@
+_realname=CGI
+pkgname="perl-${_realname}"
+pkgver=4.66
+pkgrel=1
+pkgdesc="enable all of the features of Modern Perl with one command"
+arch=(any)
+url="https://metacpan.org/release/${_realname}"
+license=('GPL' 'PerlArtistic')
+depends=('perl>=5.8.1' 'perl-HTML-Parser')
+makedepends=('make')
+checkdepends=('perl-Test-NoWarnings' 'perl-Test-Warnings>=0.3')
+options=(!emptydirs)
+source=("https://cpan.metacpan.org/authors/id/L/LE/LEEJO/CGI-$pkgver.tar.gz")
+sha256sums=('4697437688a193e3f02556e1d223015590c1f2800b40becf83dc12d5cc5ed8e1')
+
+build() {
+  cd "$srcdir/$_realname-$pkgver"
+
+  # for packages with Build.PL, do this instead:
+  PERL_MM_USE_DEFAULT=1 perl Makefile.PL installdirs=vendor destdir="$pkgdir/"
+  make
+}
+
+check() {
+  cd "$srcdir/$_realname-$pkgver"
+
+  make test
+}
+
+package() {
+  cd "$srcdir/$_realname-$pkgver"
+  
+  make DESTDIR="$pkgdir" install
+}
