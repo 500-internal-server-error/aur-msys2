@@ -3,22 +3,23 @@
 
 # Contributor: katt <magunasu.b97@gmail.com>
 
-pkgname=shellcheck-bin
+_realname=shellcheck-bin
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=0.10.0
 pkgrel=1
 url='https://shellcheck.net'
-pkgdesc='Shell script analysis tool (binary release, static)'
-license=(GPL-3.0-only)
-arch=(x86_64)
-mingw_arch=('ucrt64')
+pkgdesc='Shell script analysis tool (binary release, static) (mingw-w64)'
+license=('spdx:GPL-3.0-only')
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
 conflicts=(
-	"shellcheck"
-	"shellcheck-git"
-	"shellcheck-git-static"
+	"${MINGW_PACKAGE_PREFIX}-shellcheck"
+	"${MINGW_PACKAGE_PREFIX}-shellcheck-git"
+	"${MINGW_PACKAGE_PREFIX}-shellcheck-git-static"
 )
-provides=("shellcheck")
+provides=("${MINGW_PACKAGE_PREFIX}-shellcheck")
 
-source=(https://github.com/koalaman/"${pkgname%-bin}"/releases/download/v"$pkgver"/"${pkgname%-bin}"-v"${pkgver}".zip)
+source=(https://github.com/koalaman/"${_realname%-bin}"/releases/download/v"$pkgver"/"${_realname%-bin}"-v"${pkgver}".zip)
 
 sha512sums=('c898ab6a03d1d10a327208d5fa0765d620fa0e7d432252fa07a1adbac0fc35a1a5196c698a7dc332abbaca3bb1ebec1b278b40c7bd15a68679fe18d425deebb8')
 
