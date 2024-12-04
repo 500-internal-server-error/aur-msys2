@@ -1,5 +1,9 @@
 # Changes
 
+## 0.15.23
+
+- Replaced sed patch with actual patchfile, hopefully makes it easier to notice if it breaks
+
 ## 0.15.19
 
 - Intial packaging
