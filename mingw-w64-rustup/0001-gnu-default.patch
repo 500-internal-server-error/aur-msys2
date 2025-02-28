@@ -1,0 +1,18 @@
+diff --git a/src/dist/dist.rs b/src/dist/dist.rs
+index dfea866..90a04fa 100644
+--- a/src/dist/dist.rs
++++ b/src/dist/dist.rs
+@@ -370,10 +370,10 @@ impl TargetTriple {
+                 }
+             }
+ 
+-            // Default to msvc
++            // Default to gnu
+             let arch = arch_primary().or_else(arch_fallback)?;
+-            let msvc_triple = format!("{arch}-pc-windows-msvc");
+-            Some(TargetTriple(msvc_triple))
++            let gnu_triple = format!("{arch}-pc-windows-gnu");
++            Some(TargetTriple(gnu_triple))
+         }
+ 
+         #[cfg(not(windows))]
