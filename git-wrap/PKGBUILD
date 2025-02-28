@@ -1,0 +1,14 @@
+pkgname='git-wrap'
+pkgdesc='Wrapper to make MSYS2 git work with VSCode'
+pkgrel=1
+pkgver='r1.57bb219' # Maybe use date instead? Or pkgver() function?
+arch=('x86_64')
+url='https://gist.github.com/carlos-algms/57bb219ac07434a0f07ae1c28074b70e'
+license=('') # Sus
+depends=('git')
+source=('git-wrap.bat')
+sha256sums=('2448af78ae169fc6fb98938945a0288189f5b2e07d2270fcdba0db894d83545b')
+
+package() {
+	install -Dm755 -t "${pkgdir}/usr/bin" git-wrap.bat
+}
