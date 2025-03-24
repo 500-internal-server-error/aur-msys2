@@ -3,7 +3,7 @@
 _realname=pinentry
 pkgname=pinentry-cli
 pkgver=1.3.1
-pkgrel=1
+pkgrel=2
 pkgdesc='A collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol'
 url='https://gnupg.org/related_software/pinentry/'
 license=('GPL')
@@ -37,9 +37,9 @@ build() {
   ./configure \
     --build=${CYGWIN_CHOST} \
     --prefix=/usr \
-    --enable-pinentry-tty \
+    --disable-pinentry-tty \
     --disable-fallback-curses \
-    --disable-pinentry-curses \
+    --enable-pinentry-curses \
 	--disable-inside-emacs \
 	--disable-pinentry-gnome3 \
     --disable-pinentry-gtk2 \
