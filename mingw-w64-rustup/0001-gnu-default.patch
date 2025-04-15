@@ -1,8 +1,8 @@
-diff --git a/src/dist/dist.rs b/src/dist/dist.rs
-index dfea866..90a04fa 100644
---- a/src/dist/dist.rs
-+++ b/src/dist/dist.rs
-@@ -370,10 +370,10 @@ impl TargetTriple {
+diff --git a/src/dist/mod.rs b/src/dist/mod.rs
+index ef6cd95..a1e988a 100644
+--- a/src/dist/mod.rs
++++ b/src/dist/mod.rs
+@@ -478,10 +478,10 @@ impl TargetTriple {
                  }
              }
  
