@@ -1,0 +1,80 @@
+_realpyname='docker-py'
+_pyname='docker'
+_realname="python-${_pyname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=7.1.0
+pkgrel=1
+pkgdesc='A Python library for the Docker Engine API (mingw-w64)'
+arch=('any')
+url='https://github.com/docker/docker-py'
+license=('spdx:Apache-2.0')
+depends=(
+  "${MINGW_PACKAGE_PREFIX}-python-packaging"
+  "${MINGW_PACKAGE_PREFIX}-python-requests"
+  "${MINGW_PACKAGE_PREFIX}-python-urllib3"
+  "${MINGW_PACKAGE_PREFIX}-python-websocket-client"
+  "${MINGW_PACKAGE_PREFIX}-python-pywin32"
+)
+makedepends=(
+  "${MINGW_PACKAGE_PREFIX}-python-build"
+  "${MINGW_PACKAGE_PREFIX}-python-installer"
+  "${MINGW_PACKAGE_PREFIX}-python-setuptools"
+  "${MINGW_PACKAGE_PREFIX}-python-setuptools-scm"
+  "${MINGW_PACKAGE_PREFIX}-python-wheel"
+  "${MINGW_PACKAGE_PREFIX}-python-hatchling"
+  "${MINGW_PACKAGE_PREFIX}-python-hatch-vcs"
+)
+checkdepends=(
+  "${MINGW_PACKAGE_PREFIX}-python-flake8"
+  "${MINGW_PACKAGE_PREFIX}-python-coverage"
+  "${MINGW_PACKAGE_PREFIX}-python-paramiko"
+  "${MINGW_PACKAGE_PREFIX}-python-pytest"
+  "${MINGW_PACKAGE_PREFIX}-python-pytest-timeout"
+)
+optdepends=("${MINGW_PACKAGE_PREFIX}-python-paramiko: for connections using the SSH protocol")
+provides=("${MINGW_PACKAGE_PREFIX}-python-docker-py")
+conflicts=("${MINGW_PACKAGE_PREFIX}-python-docker-py")
+replaces=("${MINGW_PACKAGE_PREFIX}-python-docker-py")
+source=(
+  "${_realpyname}-${pkgver}.tar.gz::https://github.com/docker/docker-py/archive/${pkgver}.tar.gz"
+  '001-fix-timezone.patch'
+  '002-fix-windows-home.patch'
+  '003-speed-up-test.patch'
+)
+b2sums=('82eba285c1ea61956005dd0a9bfb66864fd30119a4b4c384d0d4350edeb331004d66bcdba6f20ec56ff48590b4a29a7b0fb07c6db6ecadfe96830337c37a535a'
+        '976e88a3df26859fc9df3f940a6c2dfeaadb483a75ea909d1757151a717e5484b8082ba0b0b0e9a12271b043dc37d544b6a9245a64da2f37779db5d73bb4e938'
+        '85b38f6a79deecf440c6237d4eb107b75f97e1567052bfada78eddd50e74c5504e875767542b597e673ac9d706fa53a607fcecfbd79b984ce8ec03ac44fb3176'
+        'b0fa6fb6b9ecae33179f6f9d40374da73ea6477108fa0a5ed584486e163ba2a5ba0c40a64077ce5dd0c30703a331d5d28fa111da8b5e7951a300e0b242fe207b')
+
+prepare() {
+  cd "${_realpyname}-${pkgver}"
+
+  # Alternatively, set TZ=UTC when running tests, but that causes deprecation warnings
+  patch -Np1 -i "${srcdir}/001-fix-timezone.patch"
+  # Patching HOME/USERPROFILE feels a bit cursed and unstable but it seems to work
+  patch -Np1 -i "${srcdir}/002-fix-windows-home.patch"
+  # Seems to pick suboptimal interfaces on systems with multiple interfaces, force loopback
+  patch -Np1 -i "${srcdir}/003-speed-up-test.patch"
+}
+
+build() {
+  cp -r "${_realpyname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+
+  export SETUPTOOLS_SCM_PRETEND_VERSION="${pkgver}"
+  python -m build --wheel --skip-dependency-check --no-isolation
+}
+
+check() {
+  cd "python-build-${MSYSTEM}"
+
+  # Tests expect '\' as path separator on Windows, mixing '/' and '\' causes them to fail
+  # Bypass by unsetting MSYSTEM to disable MSYS2 MinGW python convenience feature
+  MSYSTEM= pytest tests/unit
+}
+
+package() {
+  cd "python-build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL='--prefix=' \
+    python -m installer --prefix="${MINGW_PREFIX}" --destdir="${pkgdir}" dist/*.whl
+}

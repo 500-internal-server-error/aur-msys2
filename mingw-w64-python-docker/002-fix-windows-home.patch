@@ -1,0 +1,22 @@
+diff --git a/tests/unit/utils_test.py b/tests/unit/utils_test.py
+index 21da0b5..ccbffdc 100644
+--- a/tests/unit/utils_test.py
++++ b/tests/unit/utils_test.py
+@@ -143,9 +143,14 @@ class KwargsFromEnvTest(unittest.TestCase):
+             cert_dir = os.path.join(temp_dir, '.docker')
+             shutil.copytree(TEST_CERT_DIR, cert_dir)
+ 
+-            os.environ.update(HOME=temp_dir,
+-                              DOCKER_CERT_PATH='',
+-                              DOCKER_TLS_VERIFY='1')
++            if IS_WINDOWS_PLATFORM:
++                os.environ.update(USERPROFILE=temp_dir,
++                                  DOCKER_CERT_PATH='',
++                                  DOCKER_TLS_VERIFY='1')
++            else:
++                os.environ.update(HOME=temp_dir,
++                                  DOCKER_CERT_PATH='',
++                                  DOCKER_TLS_VERIFY='1')
+ 
+             kwargs = kwargs_from_env()
+             assert kwargs['tls'].verify

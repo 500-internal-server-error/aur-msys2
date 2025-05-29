@@ -1,0 +1,22 @@
+diff --git a/tests/unit/api_test.py b/tests/unit/api_test.py
+index e6378d2..577b3ae 100644
+--- a/tests/unit/api_test.py
++++ b/tests/unit/api_test.py
+@@ -480,7 +480,7 @@ class TCPSocketStreamTest(unittest.TestCase):
+     @classmethod
+     def setup_class(cls):
+         cls.server = socketserver.ThreadingTCPServer(
+-            ('', 0), cls.get_handler_class())
++            ('127.0.0.1', 9999), cls.get_handler_class())
+         cls.thread = threading.Thread(target=cls.server.serve_forever)
+         cls.thread.daemon = True
+         cls.thread.start()
+@@ -535,7 +535,7 @@ class TCPSocketStreamTest(unittest.TestCase):
+         assert stream is not None and tty is not None and demux is not None
+         print(self.server.server_address)
+         with APIClient(
+-                base_url=self.address,
++                base_url='127.0.0.1:9999',
+                 version=DEFAULT_DOCKER_API_VERSION
+                 ) as client:
+             if tty:

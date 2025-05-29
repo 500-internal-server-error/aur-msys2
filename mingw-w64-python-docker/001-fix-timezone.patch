@@ -1,0 +1,26 @@
+diff --git a/tests/unit/api_container_test.py b/tests/unit/api_container_test.py
+index 863fb28..0d47c56 100644
+--- a/tests/unit/api_container_test.py
++++ b/tests/unit/api_container_test.py
+@@ -1302,7 +1302,7 @@ class ContainerTest(BaseAPIClientTest):
+ 
+     def test_log_since_with_datetime(self):
+         ts = 809222400
+-        time = datetime.datetime.utcfromtimestamp(ts)
++        time = datetime.datetime.fromtimestamp(ts, datetime.UTC)
+         with mock.patch('docker.api.client.APIClient.inspect_container',
+                         fake_inspect_container):
+             self.client.logs(fake_api.FAKE_CONTAINER_ID, stream=False,
+diff --git a/tests/unit/api_test.py b/tests/unit/api_test.py
+index 9c6c1e7..577b3ae 100644
+--- a/tests/unit/api_test.py
++++ b/tests/unit/api_test.py
+@@ -231,7 +231,7 @@ class DockerApiTest(BaseAPIClientTest):
+ 
+     def test_events_with_since_until(self):
+         ts = 1356048000
+-        now = datetime.datetime.utcfromtimestamp(ts)
++        now = datetime.datetime.fromtimestamp(ts, datetime.UTC)
+         since = now - datetime.timedelta(seconds=10)
+         until = now + datetime.timedelta(seconds=10)
+ 
