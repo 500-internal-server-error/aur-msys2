@@ -1,0 +1,16 @@
+diff --git a/src/util.rs b/src/util.rs
+index f74acaf..c42f039 100644
+--- a/src/util.rs
++++ b/src/util.rs
+@@ -31,9 +31,9 @@ impl Fzf {
+         // Instead, we resolve the path to the executable and then pass it to
+         // CreateProcess.
+         #[cfg(windows)]
+-        let program = which::which("fzf.exe").map_err(|_| anyhow!(Self::ERR_FZF_NOT_FOUND))?;
++        let program = which::which("sk.exe").map_err(|_| anyhow!(Self::ERR_FZF_NOT_FOUND))?;
+         #[cfg(not(windows))]
+-        let program = "fzf";
++        let program = "sk";
+ 
+         // TODO: check version of fzf here.
+ 

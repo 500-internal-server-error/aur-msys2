@@ -1,0 +1,63 @@
+pkgname='zoxide'
+pkgver='0.9.8'
+pkgrel=1
+pkgdesc='A smarter cd command for your terminal'
+arch=('x86_64')
+url='https://github.com/ajeetdsouza/zoxide'
+license=('spdx:MIT')
+depends=('gcc-libs')
+makedepends=('rust' 'git')
+optdepends=(
+  #'fzf: for interactive selection'
+  #'skim: for interactive selection'
+)
+options=('!lto')
+source=(
+  "$pkgname::git+$url.git#tag=v$pkgver"
+  'cygwin-ls-is-gnu-ls.patch'
+  'sk-advanced.patch'
+  'sk-basic.patch'
+)
+sha256sums=('32c5bb9657f5e6d68a579406b627373da7330deb0b10814b571c4a7238772b91'
+            '74cfb9f21c50366a1bce2503ca75b605f5a42af87a8e92820f31121332ebf605'
+            '1062445b4e65a7eb21d567ae458d2d3a6b82596f651f6a2fd67790a018d6dfef'
+            '849cd2c675a3a94c68d0feae52291f84016eb00f4a5e0b7d2b389d61ff0ce353')
+
+prepare() {
+  cd "$pkgname"
+
+  patch -Np1 -i "${srcdir}/cygwin-ls-is-gnu-ls.patch"
+  # patch -Np1 -i "${srcdir}/sk-advanced.patch" # ugly and incomplete hack
+  # patch -Np1 -i "${srcdir}/sk-basic.patch" # simply replace calling fzf with sk
+
+  cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+  cd "$pkgname"
+
+  cargo build --frozen --release --all-features
+}
+
+package() {
+  cd "$pkgname"
+
+  # binary
+  install -vDm755 -t "$pkgdir/usr/bin/" "target/release/$pkgname"
+
+  # license
+  install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE
+
+  # man pages
+  install -vDm644 -t "$pkgdir/usr/share/man/man1/" man/man1/*.1
+
+  # documentation
+  install -vDm644 -t "$pkgdir/usr/share/doc/$pkgname/" README.md
+
+  # shell auto-completions
+  cd contrib/completions
+  install -vDm644 -t "$pkgdir/usr/share/zsh/site-functions/" _zoxide
+  install -vDm644 -t "$pkgdir/usr/share/fish/vendor_completions.d/" zoxide.fish
+  install -vDm644 -t "$pkgdir/usr/share/nushell/vendor/autoload/" zoxide.nu
+  install -vDm644 zoxide.bash "$pkgdir/usr/share/bash-completion/completions/zoxide"
+}

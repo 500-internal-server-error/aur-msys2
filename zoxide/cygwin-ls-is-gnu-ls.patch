@@ -1,0 +1,13 @@
+diff --git a/src/util.rs b/src/util.rs
+index f74acaf..38290b8 100644
+--- a/src/util.rs
++++ b/src/util.rs
+@@ -59,7 +59,7 @@ impl Fzf {
+ 
+         self.args([
+             // Non-POSIX args are only available on certain operating systems.
+-            if cfg!(target_os = "linux") {
++            if cfg!(any(target_os = "linux", target_os = "cygwin")) {
+                 r"--preview=\command -p ls -Cp --color=always --group-directories-first {2..}"
+             } else {
+                 r"--preview=\command -p ls -Cp {2..}"
