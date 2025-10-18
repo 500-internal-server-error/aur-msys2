@@ -1,0 +1,67 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 01c2510..331acb0 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -651,9 +651,9 @@ checksum = "32a282da65faaf38286cf3be983213fcf1d2e2a58700e808f83f4ea9a4804bc0"
+ 
+ [[package]]
+ name = "nix"
+-version = "0.29.0"
++version = "0.30.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "71e2746dc3a24dd78b3cfcb7be93368c6de9963d30f43a6a73998a9cf4b17b46"
++checksum = "74523f3a35e05aba87a1d978330aef40f67b0304ac79c1c00b294c9830543db6"
+ dependencies = [
+  "bitflags 2.9.1",
+  "cfg-if",
+diff --git a/Cargo.toml b/Cargo.toml
+index 47a676d..d97b8b2 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -29,7 +29,7 @@ fuzzy-matcher = "0.3.7"
+ indexmap = "2.8.0"
+ lazy_static = "1.2.0"
+ log = "0.4.27"
+-nix = { version = "0.29.0", default-features = false, features = ["fs"]}
++nix = { version = "0.30.1", default-features = false, features = ["fs"]}
+ rand = "0.9.0"
+ rayon = "1.5.3"
+ regex = "1.6.0"
+diff --git a/skim-tuikit/src/input.rs b/skim-tuikit/src/input.rs
+index 66532a6..5d0dda1 100644
+--- a/skim-tuikit/src/input.rs
++++ b/skim-tuikit/src/input.rs
+@@ -53,16 +53,16 @@ impl KeyBoard {
+         let (rx, tx) = nix::unistd::pipe().expect("failed to set pipe");
+ 
+         // set the signal pipe to non-blocking mode
+-        let flag = fcntl(rx.as_raw_fd(), FcntlArg::F_GETFL).expect("Get fcntl failed");
++        let flag = fcntl(&rx, FcntlArg::F_GETFL).expect("Get fcntl failed");
+         let mut flag = OFlag::from_bits_truncate(flag);
+         flag.insert(OFlag::O_NONBLOCK);
+-        let _ = fcntl(rx.as_raw_fd(), FcntlArg::F_SETFL(flag));
++        let _ = fcntl(&rx, FcntlArg::F_SETFL(flag));
+ 
+         // set file to non-blocking mode
+-        let flag = fcntl(file.as_raw_fd(), FcntlArg::F_GETFL).expect("Get fcntl failed");
++        let flag = fcntl(&file, FcntlArg::F_GETFL).expect("Get fcntl failed");
+         let mut flag = OFlag::from_bits_truncate(flag);
+         flag.insert(OFlag::O_NONBLOCK);
+-        let _ = fcntl(file.as_raw_fd(), FcntlArg::F_SETFL(flag));
++        let _ = fcntl(&file, FcntlArg::F_SETFL(flag));
+ 
+         KeyBoard {
+             file,
+diff --git a/skim-tuikit/src/raw.rs b/skim-tuikit/src/raw.rs
+index 0eb51e8..6c6d0b3 100644
+--- a/skim-tuikit/src/raw.rs
++++ b/skim-tuikit/src/raw.rs
+@@ -108,7 +108,7 @@ impl<W: Write + AsFd + AsRawFd> IntoRawMode for W {
+         use nix::errno::Errno::ENOTTY;
+         use nix::sys::termios::OutputFlags;
+ 
+-        let istty = isatty(self.as_raw_fd()).map_err(nix_err_to_io_err)?;
++        let istty = isatty(&self).map_err(nix_err_to_io_err)?;
+         if !istty {
+             Err(nix_err_to_io_err(ENOTTY))?
+         }
