@@ -1,7 +1,7 @@
 _realname=playit-win-xdg
 pkgbase="mingw-w64-${_realname}"
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=0.16.2
+pkgver=0.16.3
 pkgrel=1
 pkgdesc='A tunneling tool to host a game server without port forwarding or sharing public IP, patched to use XDG dirs on Windows (mingw-w64)'
 arch=('any')
@@ -14,7 +14,7 @@ source=(
 	"https://github.com/playit-cloud/playit-agent/archive/refs/tags/v${pkgver}.tar.gz"
 	'001-use-xdg-on-windows.patch'
 )
-sha256sums=('3db7cd4b569b502bf0f725a545e6acb3344439cea11c04d202742d7680f82a15'
+sha256sums=('c0c5b9c5b1390a3966badd5d667f66aa5dbf88d360f8b51250ae29ea18f98479'
             'a44d5b998e02448084ade6acb1acef24a713c2cb531b9a62ecdfa748ce19c584')
 
 prepare() {
