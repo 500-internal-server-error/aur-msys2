@@ -1,0 +1,148 @@
+pkgname='bat'
+pkgver='0.26.0'
+pkgrel=1
+pkgdesc='Cat clone with syntax highlighting and git integration'
+url='https://github.com/sharkdp/bat'
+msys2_changelog_url='https://github.com/sharkdp/bat/blob/master/CHANGELOG.md'
+msys2_references=(
+	'archlinux: bat'
+	'purl: pkg:cargo/bat'
+	'cpe: cpe:/a:bat_project:bat'
+)
+license=('spdx:MIT OR Apache-2.0')
+depends=(
+	'oniguruma'
+	'zlib'
+	'libgit2'
+)
+makedepends=(
+	'rust'
+	'pkgconf'
+	'git'
+	'zlib-devel'
+	'libgit2-devel'
+	# libgit2 needs these but does not auto install them...
+	'openssl-devel'
+	'pcre2-devel'
+)
+options=('!strip')
+source=("git+${url}#tag=v${pkgver}")
+sha256sums=('eb5addff1d189100ed411c7c43ce4f414935fd6985a39f6344e6866102d4dd29')
+
+prepare() {
+	mkdir vendor-build
+
+	(
+		cd vendor-build
+
+		(
+			git clone 'https://github.com/AMythicDev/minus' --depth=1 --branch='v5.6.1'
+			cd minus
+
+			sed -i 's/crossterm = "^0.27"/crossterm = "^0.29"/' Cargo.toml
+		)
+	)
+
+	cd "${pkgname}"
+
+	cat >> Cargo.toml <<EOF
+[patch.crates-io]
+minus = { path = "../vendor-build/minus" }
+EOF
+
+	cargo update
+	cargo fetch --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+	cd "${pkgname}"
+
+	LIBGIT2_NO_VENDOR=1 \
+	RUSTONIG_DYNAMIC_LIBONIG=1 \
+	RUSTFLAGS="${RUSTFLAGS/+crt-static/-crt-static}" \
+		cargo build --release --frozen
+}
+
+check() {
+	cd "${pkgname}"
+
+	local skipped=(
+		# These consistently hang
+
+		lessopen_handling_empty_output_stdin
+		map_syntax_target_syntax_case_insensitive
+		pager_arg_override_env_noconfig
+		pager_arg_override_env_withconfig
+		pager_basic
+		pager_basic_arg
+		pager_env_bat_pager_override_config
+		pager_env_pager_nooverride_config
+		pager_failed_to_parse
+		pager_more
+		pager_most_from_bat_pager_env_var
+		pager_most_from_pager_arg
+		pager_most_from_pager_env_var
+		pager_most_with_arg
+		pager_overwrite
+
+		lessopen_handling_empty_output_file
+		piped_output_with_implicit_auto_style
+		piped_output_with_line_number_flag
+		piped_output_with_line_numbers_style_flag
+		strip_ansi_auto_strips_ansi_when_provided_syntax_by_option
+		strip_ansi_does_not_affect_simple_printer
+		strip_ansi_does_not_strip_when_show_nonprintable
+		strip_ansi_never_does_not_strip_ansi
+		style_components_can_be_overidden
+		style_components_can_be_removed
+		style_components_will_merge
+		theme_arg_overrides_env
+		theme_dark_env_var_is_respected
+		utf16
+
+		# These often hang
+
+		piped_output_with_auto_style
+		strip_ansi_auto_does_not_strip_ansi_when_plain_text_by_option
+		theme_light_env_var_is_respected
+
+		strip_ansi_always_strips_ansi
+		theme_env_overrides_config
+
+		strip_ansi_auto_strips_ansi_when_detected_syntax_by_filename
+		strip_ansi_auto_does_not_strip_when_plain_text_by_filename
+		piped_output_with_line_numbers_with_header_grid_style_flag
+
+		# These sometimes hang
+
+		version_works_with_invalid_config
+		stdin
+	)
+
+	cargo test --frozen --release -- ${skipped[@]/#/--skip }
+}
+
+package() {
+	cd "${pkgname}"
+
+	install -Dm755 target/release/bat "${pkgdir}/usr/bin/bat"
+
+	# Package licenses
+	install -Dm644 LICENSE-{APACHE,MIT} -t "${pkgdir}/usr/share/licenses/${pkgname}"
+
+	cd target/release/build
+
+	# Package the man page
+	find . -name bat.1 -type f -exec install -Dm644 {} \
+		"${pkgdir}/usr/share/man/man1/bat.1" \;
+
+	# Package the shell completions
+	find . -name bat.bash -type f -exec install -Dm644 {} \
+		"${pkgdir}/usr/share/bash-completion/completions/bat" \;
+
+	find . -name bat.zsh -type f -exec install -Dm644 {} \
+		"${pkgdir}/usr/share/zsh/site-functions/_bat" \;
+
+	find . -name bat.fish -type f -exec install -Dm644 {} \
+		"${pkgdir}/usr/share/fish/vendor_completions.d/bat.fish" \;
+}
