@@ -1,0 +1,95 @@
+pkgname='cargo-edit'
+pkgver='0.13.7'
+pkgrel=1
+pkgdesc='Managing cargo dependencies from the command line'
+url='https://github.com/killercup/cargo-edit/releases'
+msys2_changelog_url='https://github.com/killercup/cargo-edit/blob/master/CHANGELOG.md'
+msys2_references=(
+	'archlinux: cargo-edit'
+	'purl: pkg:cargo/cargo-edit'
+)
+arch=('x86_64')
+license=('spdx:MIT')
+depends=('rust' 'libssh2' 'openssl')
+makedepends=('git' 'gcc' 'nasm' 'perl' 'libssh2-devel' 'openssl-devel')
+source=(
+	"https://github.com/killercup/${pkgname}/archive/v${pkgver}/${pkgname}-${pkgver}.tar.gz"
+	'ring-fix-cygwin-build.patch'
+)
+sha256sums=('f242010b4b0b8ccd245693858d26a35f70bef572a209f4977d192c1215e861c6'
+            '4c77b995183c09db9565392575f0b3cc9b2fcb4fa3bd72ba3048c4497ea24fad')
+
+prepare() {
+	# Clone manually so we can patch various packages and point them to our patched packages
+	# Versions obtained from Cargo.lock
+
+	mkdir vendor-build
+
+	(
+		cd vendor-build
+
+		(
+			git clone 'https://github.com/briansmith/ring.git'
+			cd ring
+			git checkout '2723abbca9e83347d82b056d5b239c6604f786df' # 0.17.4
+
+			patch -Np1 -i "${srcdir}/ring-fix-cygwin-build.patch"
+		)
+
+		(
+			git clone 'https://github.com/rustls/rustls.git' --depth=1 --branch='v/0.23.31'
+			cd rustls
+
+			echo 'ring = { path = "../ring" }' >> Cargo.toml
+		)
+	)
+
+	cd "${pkgname}-${pkgver}"
+
+	cat >> Cargo.toml <<EOF
+[dependencies.mio]
+version = "1.1.0"
+
+[patch.crates-io]
+rustls = { path = "../vendor-build/rustls/rustls" }
+ring = { path = "../vendor-build/ring" }
+EOF
+
+	cargo fetch --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+	cd "${pkgname}-${pkgver}"
+
+	export RUSTFLAGS="${RUSTFLAGS/+crt-static/-crt-static}"
+	CFLAGS+=' -ffat-lto-objects'
+	export LIBSSH2_SYS_USE_PKG_CONFIG=1
+	cargo build --release --frozen
+}
+
+check() {
+	cd "${pkgname}-${pkgver}"
+
+	local skipped=(
+		# Rust changed some error messages
+		'invalid_manifest::case'
+		'invalid_workspace_root_manifest::case'
+	)
+
+	export LIBSSH2_SYS_USE_PKG_CONFIG=1
+	cargo test --release --frozen -- ${skipped[@]/#/--skip }
+}
+
+package() {
+	cd "${pkgname}-${pkgver}"
+
+	cargo install \
+		--offline \
+		--no-track \
+		--frozen \
+		--path . \
+		--root "${pkgdir}/usr"
+
+	install -Dm644 README.md -t "${pkgdir}/usr/share/doc/${pkgname}"
+	install -Dm644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
