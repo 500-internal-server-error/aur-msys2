@@ -1,12 +1,12 @@
 pkgname='skim'
 pkgver='0.20.5'
-pkgrel=1
+pkgrel=2
 pkgdesc='Fuzzy Finder in Rust!'
 arch=(x86_64)
 url='https://github.com/lotabout/skim'
 license=('spdx:MIT')
-depends=('ncurses-devel')
-makedepends=('git' 'rust')
+depends=('ncurses')
+makedepends=('git' 'rust' 'ncurses-devel')
 optdepends=(
   'bash: for resp. completions and key bindings, and for sk-tmux script'
   'fish: for resp. key bindings'
