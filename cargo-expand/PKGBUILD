@@ -1,0 +1,59 @@
+pkgname='cargo-expand'
+pkgver=1.0.118
+pkgrel=1
+pkgdesc='Subcommand to show result of macro expansion'
+arch=('x86_64')
+url="https://github.com/dtolnay/cargo-expand"
+license=('spdx:MIT OR Apache-2.0')
+msys2_references=(
+	'archlinux: cargo-expand'
+)
+depends=(
+	'rust'
+	'gcc-libs'
+)
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/${pkgver}.tar.gz")
+sha256sums=('d9c412a4dff5052c05ab5afae8e3948f51a8892de121a6fc5c4957dbf599ea05')
+options=('!lto')
+
+prepare() {
+	mkdir vendor-build
+
+	(
+		cd vendor-build
+
+		(
+			git clone 'https://github.com/AMythicDev/minus' --depth=1 --branch='v5.6.1'
+			cd minus
+
+			sed -i 's/crossterm = "^0.27"/crossterm = "^0.29"/' Cargo.toml
+		)
+	)
+
+	cd "${pkgname}-${pkgver}"
+
+	cat >> Cargo.toml <<EOF
+[patch.crates-io]
+minus = { path = "../vendor-build/minus" }
+EOF
+
+	cargo update
+	cargo fetch --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+	cd "${pkgname}-${pkgver}"
+	cargo build --release --frozen
+}
+
+check() {
+	cd "${pkgname}-${pkgver}"
+	cargo test --frozen
+}
+
+package() {
+	cd "${pkgname}-${pkgver}"
+	install -Dm 755 "target/release/${pkgname}.exe" -t "${pkgdir}/usr/bin"
+	install -Dm 644 README.md -t "${pkgdir}/usr/share/doc/${pkgname}"
+	install -Dm 644 LICENSE-MIT -t "${pkgdir}/usr/share/licenses/${pkgname}"
+}
