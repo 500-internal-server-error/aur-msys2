@@ -1,7 +1,7 @@
 _realname=cargo-expand
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.0.117
+pkgver=1.0.118
 pkgrel=1
 pkgdesc='Subcommand to show result of macro expansion (mingw-w64)'
 arch=('x86_64')
@@ -16,7 +16,7 @@ depends=(
 	"${MINGW_PACKAGE_PREFIX}-gcc-libs"
 )
 source=("${_realname}-${pkgver}.tar.gz::${url}/archive/${pkgver}.tar.gz")
-sha256sums=('bba84a6964ac87021b9372eed50ce5b9bd6ea3fcfbb9c74cf0088b7b467d628b')
+sha256sums=('d9c412a4dff5052c05ab5afae8e3948f51a8892de121a6fc5c4957dbf599ea05')
 options=('!lto')
 
 prepare() {
