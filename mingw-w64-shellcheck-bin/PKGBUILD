@@ -6,7 +6,7 @@
 _realname=shellcheck-bin
 pkgbase="mingw-w64-${_realname}"
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=0.10.0
+pkgver=0.11.0
 pkgrel=1
 url='https://shellcheck.net'
 pkgdesc='Shell script analysis tool (binary release, static) (mingw-w64)'
@@ -22,7 +22,7 @@ provides=("${MINGW_PACKAGE_PREFIX}-shellcheck")
 
 source=(https://github.com/koalaman/"${_realname%-bin}"/releases/download/v"$pkgver"/"${_realname%-bin}"-v"${pkgver}".zip)
 
-sha512sums=('c898ab6a03d1d10a327208d5fa0765d620fa0e7d432252fa07a1adbac0fc35a1a5196c698a7dc332abbaca3bb1ebec1b278b40c7bd15a68679fe18d425deebb8')
+sha512sums=('910a27486747ff78dc8a036db7460ef4f3278658a87fc19b79de2fde5deca274be651b03e171ea1bafaaae6560d8e3d65e7e119fe7889bc83a60aef0dca8623f')
 
 package() {
     install -Dm755 "shellcheck.exe" -t "${pkgdir}${MINGW_PREFIX}/bin"
